@@ -1,0 +1,997 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+<title>SachOS 0.2</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ font-family:"Segoe UI",Arial,sans-serif;
+ color:white;
+ height:100dvh;
+ overflow:hidden;
+ background:#172b50;
+ user-select:none;
+}
+button,input,textarea{font:inherit}
+button{color:inherit;cursor:pointer}
+
+/* WALLPAPER */
+
+#desktop{
+ position:relative;
+ height:calc(100dvh - 55px);
+ overflow:hidden;
+ background:
+ radial-gradient(ellipse at 72% 45%,#8765d8 0%,transparent 42%),
+ radial-gradient(ellipse at 25% 70%,#1686b5 0%,transparent 45%),
+ linear-gradient(135deg,#10172d,#263f70);
+}
+#desktop.purple{
+ background:radial-gradient(ellipse at 70% 40%,#a45bd8,transparent 45%),linear-gradient(135deg,#190e30,#432268);
+}
+#desktop.green{
+ background:radial-gradient(ellipse at 70% 40%,#45b98a,transparent 45%),linear-gradient(135deg,#082e28,#216b57);
+}
+#desktop.dark{
+ background:linear-gradient(135deg,#080a10,#252b38);
+}
+
+/* DESKTOP */
+
+.desktop-icons{
+ position:absolute;
+ top:15px;
+ left:12px;
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+}
+.desktop-icon{
+ width:78px;
+ min-height:76px;
+ border:1px solid transparent;
+ background:transparent;
+ border-radius:8px;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ gap:5px;
+ font-size:12px;
+}
+.desktop-icon:hover,
+.desktop-icon:focus{
+ background:#ffffff25;
+ border-color:#ffffff30;
+}
+.desktop-icon span{font-size:29px}
+.welcome{
+ position:absolute;
+ top:40%;
+ left:50%;
+ transform:translate(-50%,-50%);
+ text-align:center;
+ pointer-events:none;
+}
+.welcome h1{
+ font-size:clamp(34px,7vw,65px);
+ margin:0;
+ letter-spacing:-2px;
+ text-shadow:0 5px 25px #0005;
+}
+.welcome p{color:#d4dcec;font-size:14px}
+
+/* TASKBAR */
+
+.taskbar{
+ height:55px;
+ position:absolute;
+ bottom:0;
+ left:0;
+ right:0;
+ z-index:1000;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ gap:7px;
+ background:#101827dc;
+ backdrop-filter:blur(25px);
+ border-top:1px solid #ffffff20;
+}
+.taskbar button{
+ border:0;
+ background:transparent;
+ border-radius:9px;
+ padding:7px 11px;
+ font-size:22px;
+}
+.taskbar button:hover{background:#ffffff25}
+.task-clock{
+ position:absolute;
+ right:12px;
+ text-align:right;
+ font-size:11px;
+ line-height:1.5;
+}
+#taskApps{
+ display:flex;
+ gap:5px;
+}
+
+/* START MENU */
+
+.start-menu{
+ display:none;
+ position:absolute;
+ z-index:950;
+ bottom:63px;
+ left:50%;
+ transform:translateX(-50%);
+ width:min(410px,95vw);
+ max-height:75vh;
+ overflow:auto;
+ padding:20px;
+ background:#17243bf2;
+ backdrop-filter:blur(30px);
+ border:1px solid #ffffff30;
+ border-radius:16px;
+ box-shadow:0 15px 55px #0007;
+}
+.start-menu h3{margin-top:0}
+.start-search{
+ width:100%;
+ padding:12px;
+ border-radius:8px;
+ border:1px solid #ffffff30;
+ background:#ffffff12;
+ color:white;
+ outline:none;
+ margin-bottom:17px;
+}
+.app-grid{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:8px;
+}
+.app-grid button{
+ min-height:78px;
+ border:0;
+ background:#ffffff10;
+ border-radius:10px;
+ font-size:12px;
+}
+.app-grid button:hover{background:#ffffff28}
+.app-grid span{
+ display:block;
+ font-size:26px;
+ margin-bottom:7px;
+}
+.start-footer{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-top:18px;
+ padding-top:12px;
+ border-top:1px solid #ffffff20;
+ font-size:12px;
+}
+.start-footer button{
+ background:#ffffff15;
+ border:0;
+ padding:8px;
+ border-radius:8px;
+}
+
+/* WINDOWS */
+
+.window{
+ position:absolute;
+ top:10%;
+ left:50%;
+ transform:translateX(-50%);
+ width:min(560px,95vw);
+ height:min(440px,78vh);
+ min-width:260px;
+ min-height:190px;
+ resize:both;
+ overflow:hidden;
+ background:#17243bf2;
+ backdrop-filter:blur(25px);
+ border:1px solid #ffffff35;
+ border-radius:12px;
+ box-shadow:0 15px 55px #0008;
+}
+.window.active{border-color:#ffffff60}
+.window.maximized{
+ top:0!important;
+ left:0!important;
+ width:100%!important;
+ height:calc(100dvh - 55px)!important;
+ max-width:none;
+ max-height:none;
+ transform:none!important;
+ resize:none;
+ border-radius:0;
+}
+.titlebar{
+ height:43px;
+ padding:0 10px 0 14px;
+ background:#ffffff12;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ cursor:grab;
+ touch-action:none;
+}
+.titlebar:active{cursor:grabbing}
+.titlebar button{
+ border:0;
+ background:transparent;
+ padding:8px;
+ border-radius:5px;
+}
+.titlebar button:hover{background:#ffffff30}
+.titlebar .close:hover{background:#d83c52}
+.window-content{
+ height:calc(100% - 43px);
+ padding:16px;
+ overflow:auto;
+ user-select:text;
+}
+.window-content h2{margin-top:0}
+.window-content button{
+ border:0;
+ border-radius:7px;
+ padding:9px 13px;
+ background:#426db5;
+}
+.window-content button:hover{filter:brightness(1.2)}
+.window-content input,
+.window-content select{
+ width:100%;
+ background:#101827;
+ color:white;
+ border:1px solid #ffffff35;
+ border-radius:7px;
+ padding:10px;
+ margin:5px 0;
+}
+.window-content textarea{
+ width:100%;
+ height:calc(100% - 55px);
+ min-height:150px;
+ background:#101827;
+ color:white;
+ border:1px solid #ffffff35;
+ border-radius:8px;
+ padding:12px;
+ resize:none;
+ outline:none;
+ user-select:text;
+}
+.window-content p{line-height:1.5}
+
+/* FILES */
+
+.file-grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+ gap:10px;
+}
+.file-item{
+ background:#ffffff10;
+ border-radius:10px;
+ padding:14px 5px;
+ text-align:center;
+ cursor:pointer;
+ font-size:12px;
+ overflow-wrap:anywhere;
+}
+.file-item span{
+ display:block;
+ font-size:29px;
+ margin-bottom:8px;
+}
+.file-item:hover{background:#ffffff25}
+
+/* TERMINAL */
+
+.terminal{
+ height:100%;
+ overflow:auto;
+ background:#080d16;
+ border-radius:8px;
+ padding:12px;
+ font-family:monospace;
+ font-size:13px;
+}
+.terminal-output{white-space:pre-wrap;line-height:1.7}
+.terminal-line{
+ display:flex;
+ gap:6px;
+ align-items:center;
+ margin-top:10px;
+}
+.terminal-line input{
+ flex:1;
+ min-width:0;
+ border:0;
+ background:transparent;
+ font-family:monospace;
+ outline:none;
+}
+
+/* LOCK SCREEN */
+
+#lockScreen{
+ position:fixed;
+ inset:0;
+ z-index:5000;
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ text-align:center;
+ background:
+ radial-gradient(ellipse at 70% 40%,#7956bb,transparent 45%),
+ linear-gradient(135deg,#10172d,#253e6d);
+}
+.lock-time{
+ font-size:clamp(55px,14vw,100px);
+ font-weight:300;
+ letter-spacing:-4px;
+}
+.lock-date{font-size:18px;color:#e0e6f3}
+.lock-user{
+ margin-top:45px;
+ font-size:16px;
+}
+.lock-avatar{
+ font-size:55px;
+ margin-bottom:10px;
+}
+.lock-button{
+ margin-top:20px;
+ padding:12px 28px;
+ border:1px solid #ffffff50;
+ border-radius:9px;
+ background:#ffffff20;
+}
+.lock-button:hover{background:#ffffff35}
+.lock-hint{
+ font-size:12px;
+ color:#c7d0e5;
+ margin-top:15px;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+ .task-clock{display:none}
+ .taskbar{gap:3px}
+ .taskbar button{padding:8px}
+ .window{
+  top:4%;
+  width:96vw;
+  height:85%;
+  min-width:0;
+  resize:none;
+ }
+ .window.maximized{
+  height:calc(100dvh - 55px)!important;
+ }
+ .start-menu{bottom:61px}
+ .welcome{top:45%}
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOCK SCREEN -->
+
+<div id="lockScreen">
+ <div class="lock-time" id="lockTime">00:00</div>
+ <div class="lock-date" id="lockDate"></div>
+ <div class="lock-user">
+  <div class="lock-avatar">💠</div>
+  <strong>SachOS User</strong>
+ </div>
+ <button class="lock-button" onclick="unlock()">Entrar al escritorio →</button>
+ <div class="lock-hint">Bienvenido a SachOS</div>
+</div>
+
+<!-- DESKTOP -->
+
+<div id="desktop" class="">
+
+ <div class="desktop-icons">
+  <button class="desktop-icon" onclick="openApp('files')">
+   <span>📁</span>Archivos
+  </button>
+  <button class="desktop-icon" onclick="openApp('notes')">
+   <span>📝</span>Notas
+  </button>
+  <button class="desktop-icon" onclick="openApp('terminal')">
+   <span>💻</span>Terminal
+  </button>
+  <button class="desktop-icon" onclick="openApp('browser')">
+   <span>🌐</span>Browser
+  </button>
+  <button class="desktop-icon" onclick="openApp('settings')">
+   <span>⚙️</span>Ajustes
+  </button>
+ </div>
+
+ <div class="welcome">
+  <h1>SachOS</h1>
+  <p>Your desktop. Your world.</p>
+ </div>
+
+ <!-- START MENU -->
+
+ <div class="start-menu" id="startMenu">
+  <h3>Inicio · SachOS</h3>
+  <input class="start-search" id="startSearch"
+   placeholder="Buscar aplicaciones..."
+   oninput="filterApps(this.value)">
+
+  <div class="app-grid" id="appGrid">
+   <button data-app="files" onclick="openApp('files')"><span>📁</span>Archivos</button>
+   <button data-app="notes" onclick="openApp('notes')"><span>📝</span>Notas</button>
+   <button data-app="terminal" onclick="openApp('terminal')"><span>💻</span>Terminal</button>
+   <button data-app="browser" onclick="openApp('browser')"><span>🌐</span>Browser</button>
+   <button data-app="settings" onclick="openApp('settings')"><span>⚙️</span>Ajustes</button>
+   <button data-app="about" onclick="openApp('about')"><span>💠</span>Sistema</button>
+   <button data-app="calculator" onclick="openApp('calculator')"><span>🧮</span>Calculadora</button>
+   <button data-app="music" onclick="openApp('music')"><span>🎵</span>Música</button>
+   <button data-app="calendar" onclick="openApp('calendar')"><span>📅</span>Calendario</button>
+  </div>
+
+  <div class="start-footer">
+   <span>💠 SachOS User</span>
+   <button onclick="lockOS()">🔒 Bloquear</button>
+  </div>
+ </div>
+
+</div>
+
+<!-- TASKBAR -->
+
+<div class="taskbar">
+ <button onclick="toggleStart()" title="Inicio">⊞</button>
+ <div id="taskApps"></div>
+ <button onclick="openApp('browser')" title="Browser">🌐</button>
+ <button onclick="openApp('files')" title="Archivos">📁</button>
+ <button onclick="openApp('settings')" title="Ajustes">⚙️</button>
+ <div class="task-clock" id="taskClock"></div>
+</div>
+
+<script>
+
+/* SYSTEM DATA */
+
+let zIndex=20;
+const windows={};
+
+const appData={
+ files:{title:"📁 Explorador de archivos"},
+ notes:{title:"📝 Bloc de notas"},
+ terminal:{title:"💻 SachOS Terminal"},
+ browser:{title:"🌐 SachBrowser"},
+ settings:{title:"⚙️ Configuración"},
+ about:{title:"💠 Acerca de SachOS"},
+ calculator:{title:"🧮 Calculadora"},
+ music:{title:"🎵 SachMusic"},
+ calendar:{title:"📅 Calendario"}
+};
+
+/* CLOCK */
+
+function updateClock(){
+ const now=new Date();
+ const time=now.toLocaleTimeString('es-CL',{
+  hour:'2-digit',minute:'2-digit'
+ });
+ const date=now.toLocaleDateString('es-CL',{
+  weekday:'long',day:'numeric',month:'long',year:'numeric'
+ });
+
+ document.getElementById('taskClock').innerHTML=
+ time+'<br>'+date;
+
+ document.getElementById('lockTime').textContent=time;
+ document.getElementById('lockDate').textContent=date;
+}
+updateClock();
+setInterval(updateClock,1000);
+
+/* LOCK SCREEN */
+
+function unlock(){
+ document.getElementById('lockScreen').style.display='none';
+ localStorage.setItem('sachos-last-unlock','yes');
+}
+function lockOS(){
+ document.getElementById('startMenu').style.display='none';
+ document.getElementById('lockScreen').style.display='flex';
+}
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){
+  document.getElementById('startMenu').style.display='none';
+ }
+ if(e.ctrlKey && e.key.toLowerCase()==='l'){
+  lockOS();
+ }
+});
+
+/* START MENU */
+
+function toggleStart(){
+ const menu=document.getElementById('startMenu');
+ menu.style.display=menu.style.display==='block'?'none':'block';
+}
+function filterApps(query){
+ document.querySelectorAll('#appGrid button').forEach(btn=>{
+  btn.style.display=btn.textContent.toLowerCase().includes(query.toLowerCase())
+  ?'block':'none';
+ });
+}
+
+/* WINDOW CREATION */
+
+function openApp(id){
+ const app=appData[id];
+ if(!app)return;
+
+ document.getElementById('startMenu').style.display='none';
+
+ if(windows[id]){
+  windows[id].style.display='block';
+  windows[id].style.zIndex=++zIndex;
+  return;
+ }
+
+ const win=document.createElement('div');
+ win.className='window';
+ win.style.zIndex=++zIndex;
+
+ win.innerHTML=`
+  <div class="titlebar">
+   <span>${app.title}</span>
+   <div>
+    <button data-action="minimize">—</button>
+    <button data-action="maximize">□</button>
+    <button data-action="close" class="close">✕</button>
+   </div>
+  </div>
+  <div class="window-content">${getAppContent(id)}</div>
+ `;
+
+ document.getElementById('desktop').appendChild(win);
+ windows[id]=win;
+
+ win.addEventListener('pointerdown',()=>{
+  win.style.zIndex=++zIndex;
+ });
+
+ win.querySelector('[data-action="minimize"]').onclick=()=>minimizeApp(id);
+ win.querySelector('[data-action="maximize"]').onclick=()=>maximizeApp(id);
+ win.querySelector('[data-action="close"]').onclick=()=>closeApp(id);
+
+ makeDraggable(win);
+ addTaskApp(id);
+
+ if(id==='notes'){
+  win.querySelector('#noteArea').value=localStorage.getItem('sachos-note')||'';
+ }
+ if(id==='files')renderFiles();
+ if(id==='settings')loadSettings();
+ if(id==='calendar')renderCalendar();
+}
+
+/* APP CONTENT */
+
+function getAppContent(id){
+
+ if(id==='files')return `
+  <h2>📁 Este equipo</h2>
+  <p>Archivos locales de SachOS</p>
+  <button onclick="createFile()">＋ Nuevo archivo</button>
+  <div class="file-grid" id="fileGrid"></div>
+ `;
+
+ if(id==='notes')return `
+  <h2>📝 Bloc de notas</h2>
+  <textarea id="noteArea" placeholder="Escribe tus ideas aquí..."></textarea>
+  <button onclick="saveNote()">💾 Guardar</button>
+  <span id="noteStatus"></span>
+ `;
+
+ if(id==='terminal')return `
+  <div class="terminal">
+   <div class="terminal-output" id="terminalOutput">
+    SachOS Terminal [Versión 0.2]
+    Escribe help para ver los comandos.
+   </div>
+   <div class="terminal-line">
+    <span>sach@os:~$</span>
+    <input id="terminalInput" placeholder="Comando..."
+     onkeydown="if(event.key==='Enter')runCommand()">
+   </div>
+  </div>
+ `;
+
+ if(id==='browser')return `
+  <h2>🌐 SachBrowser</h2>
+  <p>Explora Internet desde SachOS.</p>
+  <input id="browserUrl" placeholder="https://example.com">
+  <button onclick="browse()">Abrir página ↗</button>
+  <p id="browserStatus">Introduce una dirección web.</p>
+  <p style="font-size:12px;color:#c4cce0">
+   Las páginas se abren en una pestaña nueva.
+  </p>
+ `;
+
+ if(id==='settings')return `
+  <h2>⚙️ Configuración</h2>
+  <h3>Personalización</h3>
+  <p>Fondo de escritorio</p>
+  <select id="wallSelect" onchange="changeWallpaper(this.value)">
+   <option value="">Azul SachOS</option>
+   <option value="purple">Morado</option>
+   <option value="green">Verde</option>
+   <option value="dark">Oscuro</option>
+  </select>
+  <h3>Sistema</h3>
+  <p>Nombre: SachOS</p>
+  <p>Versión: 0.2</p>
+  <p>Plataforma: Web</p>
+  <button onclick="lockOS()">🔒 Bloquear sistema</button>
+ `;
+
+ if(id==='about')return `
+  <h1>💠 SachOS</h1>
+  <h2>Versión 0.2</h2>
+  <p>Un entorno de escritorio web inspirado en Windows 11.</p>
+  <p>Desarrollador: Bastianelpro88-debug</p>
+  <p>Tecnologías: HTML, CSS y JavaScript.</p>
+  <p>Compatible con navegadores de Android y PC.</p>
+ `;
+
+ if(id==='calculator')return `
+  <h2>🧮 Calculadora</h2>
+  <input id="calcDisplay" readonly placeholder="0">
+  <div class="app-grid" style="grid-template-columns:repeat(4,1fr)">
+   ${['7','8','9','/','4','5','6','*','1','2','3','-','0','.','C','+'].map(v=>
+    `<button onclick="calcPress('${v}')">${v}</button>`
+   ).join('')}
+   <button style="grid-column:span 4" onclick="calcResult()">=</button>
+  </div>
+ `;
+
+ if(id==='music')return `
+  <h2>🎵 SachMusic</h2>
+  <p>Tu espacio musical.</p>
+  <p>Selecciona un archivo de audio de tu dispositivo:</p>
+  <input type="file" accept="audio/*" onchange="loadMusic(this)">
+  <audio id="audioPlayer" controls style="width:100%;margin-top:15px"></audio>
+ `;
+
+ if(id==='calendar')return `
+  <h2>📅 Calendario</h2>
+  <div id="calendarContent"></div>
+ `;
+
+ return '';
+}
+
+/* CLOSE / MINIMIZE / MAXIMIZE */
+
+function closeApp(id){
+ windows[id]?.remove();
+ delete windows[id];
+ document.getElementById('task-'+id)?.remove();
+}
+
+function minimizeApp(id){
+ if(windows[id])windows[id].style.display='none';
+}
+
+function maximizeApp(id){
+ const win=windows[id];
+ if(!win)return;
+
+ win.classList.toggle('maximized');
+}
+
+/* DRAG WINDOWS */
+
+function makeDraggable(win){
+ const bar=win.querySelector('.titlebar');
+ let active=false;
+ let startX=0,startY=0,origX=0,origY=0;
+
+ bar.addEventListener('pointerdown',e=>{
+  if(e.target.closest('button'))return;
+  if(win.classList.contains('maximized'))return;
+
+  active=true;
+  startX=e.clientX;
+  startY=e.clientY;
+
+  const rect=win.getBoundingClientRect();
+  origX=rect.left;
+  origY=rect.top;
+
+  bar.setPointerCapture(e.pointerId);
+ });
+
+ bar.addEventListener('pointermove',e=>{
+  if(!active)return;
+
+  let x=origX+e.clientX-startX;
+  let y=origY+e.clientY-startY;
+
+  x=Math.max(0,Math.min(innerWidth-win.offsetWidth,x));
+  y=Math.max(0,Math.min(innerHeight-100,y));
+
+  win.style.left=x+'px';
+  win.style.top=y+'px';
+  win.style.transform='none';
+ });
+
+ bar.addEventListener('pointerup',()=>active=false);
+ bar.addEventListener('pointercancel',()=>active=false);
+}
+
+/* TASKBAR APP INDICATORS */
+
+function addTaskApp(id){
+ const task=document.getElementById('taskApps');
+ const btn=document.createElement('button');
+ btn.id='task-'+id;
+ btn.textContent={
+  files:'📁',notes:'📝',terminal:'💻',
+  browser:'🌐',settings:'⚙️',about:'💠',
+  calculator:'🧮',music:'🎵',calendar:'📅'
+ }[id];
+
+ btn.onclick=()=>{
+  if(windows[id].style.display==='none'){
+   windows[id].style.display='block';
+   windows[id].style.zIndex=++zIndex;
+  }else{
+   minimizeApp(id);
+  }
+ };
+
+ task.appendChild(btn);
+}
+
+/* NOTES */
+
+function saveNote(){
+ const value=document.getElementById('noteArea').value;
+ localStorage.setItem('sachos-note',value);
+ document.getElementById('noteStatus').textContent=' ✓ Guardado';
+}
+
+/* FILE EXPLORER */
+
+function getFiles(){
+ try{
+  return JSON.parse(localStorage.getItem('sachos-files')||'[]');
+ }catch{
+  return [];
+ }
+}
+
+function renderFiles(){
+ const grid=document.getElementById('fileGrid');
+ if(!grid)return;
+
+ const files=getFiles();
+
+ grid.innerHTML=files.length
+ ?files.map((file,i)=>`
+  <div class="file-item" onclick="openSavedFile(${i})">
+   <span>📄</span>${escapeHTML(file.name)}
+  </div>
+ `).join('')
+ :'<p style="color:#cbd5e1">No hay archivos todavía.</p>';
+}
+
+function createFile(){
+ const name=prompt('Nombre del nuevo archivo:');
+ if(!name || !name.trim())return;
+
+ const files=getFiles();
+ files.push({name:name.trim(),content:''});
+
+ localStorage.setItem('sachos-files',JSON.stringify(files));
+ renderFiles();
+}
+
+function openSavedFile(index){
+ const files=getFiles();
+ const file=files[index];
+ if(!file)return;
+
+ const name=prompt('Nombre: '+file.name+'\nContenido actual:\n'+file.content,
+ file.content);
+
+ if(name===null)return;
+
+ file.content=name;
+ localStorage.setItem('sachos-files',JSON.stringify(files));
+ renderFiles();
+}
+
+function escapeHTML(text){
+ return String(text).replace(/[&<>"']/g,c=>({
+  '&':'&amp;','<':'&lt;','>':'&gt;',
+  '"':'&quot;',"'":'&#39;'
+ }[c]));
+}
+
+/* SETTINGS */
+
+function changeWallpaper(theme){
+ const desktop=document.getElementById('desktop');
+ desktop.className=theme;
+ localStorage.setItem('sachos-theme',theme);
+}
+
+function loadSettings(){
+ const theme=localStorage.getItem('sachos-theme')||'';
+ document.getElementById('wallSelect').value=theme;
+}
+
+const savedTheme=localStorage.getItem('sachos-theme');
+if(savedTheme)changeWallpaper(savedTheme);
+
+/* BROWSER */
+
+function browse(){
+ const input=document.getElementById('browserUrl');
+ const status=document.getElementById('browserStatus');
+ let url=input.value.trim();
+
+ if(!url){
+  status.textContent='Escribe una dirección.';
+  return;
+ }
+
+ if(!/^https?:\/\//i.test(url))url='https://'+url;
+
+ try{
+  const parsed=new URL(url);
+  if(!['http:','https:'].includes(parsed.protocol))throw Error();
+  window.open(parsed.href,'_blank','noopener,noreferrer');
+  status.textContent='Página abierta en otra pestaña.';
+ }catch{
+  status.textContent='Dirección no válida.';
+ }
+}
+
+/* TERMINAL */
+
+function runCommand(){
+ const input=document.getElementById('terminalInput');
+ const output=document.getElementById('terminalOutput');
+ const cmd=input.value.trim();
+ const parts=cmd.split(' ');
+ const command=parts[0].toLowerCase();
+ let result='';
+
+ const commands={
+  help:'Comandos disponibles:\nhelp, about, version, date, time, clear, hello, apps, lock',
+  about:'SachOS es un sistema operativo web experimental.',
+  version:'SachOS 0.2 FULL EDITION',
+  date:new Date().toLocaleDateString('es-CL'),
+  time:new Date().toLocaleTimeString('es-CL'),
+  hello:'¡Hola! Bienvenido a SachOS.',
+  apps:'Archivos, Notas, Terminal, Browser, Ajustes, Calculadora, Música y Calendario.',
+  lock:'__LOCK__',
+  clear:'__CLEAR__'
+ };
+
+ if(command==='open'){
+  if(appData[parts[1]]){
+   result='Abriendo '+parts[1]+'...';
+   openApp(parts[1]);
+  }else result='Aplicación no encontrada.';
+ }else{
+  result=commands[command]??'Comando desconocido. Escribe help.';
+ }
+
+ if(result==='__CLEAR__'){
+  output.textContent='';
+ }else if(result==='__LOCK__'){
+  lockOS();
+ }else{
+  output.textContent+='\n\nsach@os:~$ '+cmd+'\n'+result;
+ }
+
+ input.value='';
+ const terminal=output.parentElement;
+ terminal.scrollTop=terminal.scrollHeight;
+}
+
+/* CALCULATOR */
+
+function calcPress(value){
+ const display=document.getElementById('calcDisplay');
+ if(!display)return;
+
+ if(value==='C')display.value='';
+ else display.value+=value;
+}
+
+function calcResult(){
+ const display=document.getElementById('calcDisplay');
+ if(!display)return;
+
+ if(!/^[0-9+\-*/.() ]+$/.test(display.value)){
+  display.value='Error';
+  return;
+ }
+
+ try{
+  const result=Function('"use strict";return ('+display.value+')')();
+  display.value=Number.isFinite(result)?String(result):'Error';
+ }catch{
+  display.value='Error';
+ }
+}
+
+/* MUSIC */
+
+function loadMusic(input){
+ const file=input.files[0];
+ if(!file)return;
+
+ const player=document.getElementById('audioPlayer');
+ player.src=URL.createObjectURL(file);
+ player.play();
+}
+
+/* CALENDAR */
+
+function renderCalendar(){
+ const now=new Date();
+ const first=new Date(now.getFullYear(),now.getMonth(),1);
+ const last=new Date(now.getFullYear(),now.getMonth()+1,0);
+ const names=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+ const month=now.toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+
+ let html=`<h3>${month}</h3>
+ <div class="app-grid" style="grid-template-columns:repeat(7,1fr)">`;
+
+ names.forEach(n=>html+=`<button>${n}</button>`);
+
+ for(let i=0;i<first.getDay();i++)html+='<div></div>';
+
+ for(let d=1;d<=last.getDate();d++){
+  const today=d===now.getDate();
+  html+=`<button style="${today?'background:#426db5':''}">${d}</button>`;
+ }
+
+ html+='</div>';
+ document.getElementById('calendarContent').innerHTML=html;
+}
+
+/* WELCOME */
+
+console.log('SachOS 0.2 iniciado correctamente.');
+</script>
+</body>
+</html>
+ 
