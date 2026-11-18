@@ -1,0 +1,445 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SachOS</title>
+<style>
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:"Segoe UI",Arial,sans-serif;
+  color:white;
+  height:100dvh;
+  overflow:hidden;
+  background:linear-gradient(135deg,#101c38,#263d70,#59418c);
+  background-size:cover;
+}
+.desktop {
+  height:calc(100dvh - 54px);
+  padding:18px;
+  position:relative;
+}
+.wallpaper {
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 70% 45%,#7658bc99,transparent 45%),
+    radial-gradient(ellipse at 30% 70%,#1685b599,transparent 50%),
+    linear-gradient(135deg,#10172d,#243e69);
+  z-index:-1;
+}
+.welcome {
+  position:absolute;
+  top:35%;left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+  pointer-events:none;
+}
+.welcome h1 {font-size:42px;margin:0}
+.welcome p {color:#d1d5e5}
+.icons {
+  display:grid;
+  grid-template-columns:75px;
+  gap:16px;
+  width:85px;
+}
+.desktop-icon {
+  border:1px solid transparent;
+  border-radius:8px;
+  padding:8px 3px;
+  text-align:center;
+  cursor:pointer;
+  font-size:12px;
+}
+.desktop-icon:hover {background:#ffffff25;border-color:#ffffff35}
+.desktop-icon span {display:block;font-size:28px;margin-bottom:5px}
+.taskbar {
+  height:54px;
+  position:absolute;
+  bottom:0;left:0;right:0;
+  background:#101827dd;
+  backdrop-filter:blur(22px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  z-index:1000;
+  border-top:1px solid #ffffff20;
+}
+.taskbar button {
+  border:0;
+  background:transparent;
+  color:white;
+  font-size:22px;
+  cursor:pointer;
+  border-radius:8px;
+  padding:7px 11px;
+}
+.taskbar button:hover {background:#ffffff25}
+.clock {
+  position:absolute;
+  right:12px;
+  font-size:11px;
+  text-align:right;
+}
+.start-menu {
+  position:absolute;
+  z-index:999;
+  bottom:62px;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(360px,94vw);
+  background:#17243bea;
+  backdrop-filter:blur(25px);
+  border:1px solid #ffffff30;
+  border-radius:15px;
+  padding:18px;
+  display:none;
+}
+.start-menu h3 {margin-top:0}
+.app-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+.app-grid button {
+  background:#ffffff12;
+  border:0;
+  color:white;
+  border-radius:10px;
+  padding:13px 4px;
+  cursor:pointer;
+}
+.app-grid button:hover {background:#ffffff30}
+.app-grid span {display:block;font-size:25px;margin-bottom:5px}
+.window {
+  position:absolute;
+  top:10%;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(520px,94vw);
+  height:min(410px,75vh);
+  background:#17243bf2;
+  backdrop-filter:blur(25px);
+  border:1px solid #ffffff35;
+  border-radius:12px;
+  box-shadow:0 15px 55px #0008;
+  overflow:hidden;
+  z-index:20;
+}
+.titlebar {
+  height:43px;
+  padding:0 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#ffffff12;
+  cursor:grab;
+  touch-action:none;
+}
+.titlebar button {
+  background:transparent;
+  color:white;
+  border:0;
+  cursor:pointer;
+  padding:8px;
+}
+.titlebar button:hover {background:#ffffff30}
+.window-content {
+  height:calc(100% - 43px);
+  padding:16px;
+  overflow:auto;
+}
+.window textarea {
+  width:100%;height:100%;
+  background:#101827;
+  color:white;
+  border:1px solid #ffffff30;
+  border-radius:8px;
+  padding:12px;
+  resize:none;
+  font:14px inherit;
+}
+.action {
+  background:#4269b2;
+  color:white;
+  border:0;
+  border-radius:7px;
+  padding:9px 13px;
+  cursor:pointer;
+}
+.file {
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  padding:15px;
+  cursor:pointer;
+}
+input,select {
+  background:#101827;
+  color:white;
+  padding:10px;
+  border:1px solid #ffffff40;
+  border-radius:7px;
+  max-width:100%;
+}
+.terminal {
+  background:#080d16;
+  padding:12px;
+  height:100%;
+  font-family:monospace;
+  overflow:auto;
+  font-size:13px;
+}
+.terminal input {
+  width:100%;
+  margin-top:10px;
+  font-family:monospace;
+}
+.hidden {display:none!important}
+@media(max-width:500px) {
+  .welcome h1 {font-size:32px}
+  .window {height:70vh;top:8%}
+  .taskbar {justify-content:center}
+  .clock {display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="desktop" id="desktop">
+<div class="wallpaper" id="wallpaper"></div>
+
+<div class="icons">
+  <div class="desktop-icon" onclick="openApp('files')">
+    <span>📁</span>Archivos
+  </div>
+  <div class="desktop-icon" onclick="openApp('notes')">
+    <span>📝</span>Notas
+  </div>
+  <div class="desktop-icon" onclick="openApp('terminal')">
+    <span>💻</span>Terminal
+  </div>
+  <div class="desktop-icon" onclick="openApp('settings')">
+    <span>⚙️</span>Ajustes
+  </div>
+</div>
+
+<div class="welcome">
+  <h1>SachOS</h1>
+  <p>Tu escritorio. Tu mundo.</p>
+</div>
+
+<div class="start-menu" id="start">
+  <h3>Inicio · SachOS</h3>
+  <div class="app-grid">
+    <button onclick="openApp('files')"><span>📁</span>Archivos</button>
+    <button onclick="openApp('notes')"><span>📝</span>Notas</button>
+    <button onclick="openApp('terminal')"><span>💻</span>Terminal</button>
+    <button onclick="openApp('settings')"><span>⚙️</span>Ajustes</button>
+    <button onclick="openApp('about')"><span>💠</span>Sistema</button>
+    <button onclick="openApp('browser')"><span>🌐</span>Browser</button>
+  </div>
+  <p style="font-size:12px;color:#b9c6dd">SachOS · Versión 0.1</p>
+</div>
+</div>
+
+<div class="taskbar">
+  <button onclick="toggleStart()" title="Inicio">⊞</button>
+  <button onclick="openApp('files')" title="Archivos">📁</button>
+  <button onclick="openApp('browser')" title="Browser">🌐</button>
+  <button onclick="openApp('notes')" title="Notas">📝</button>
+  <div class="clock" id="clock"></div>
+</div>
+
+<script>
+let zIndex = 30;
+const windows = {};
+
+const apps = {
+ files: {
+  title:"Explorador de archivos",
+  html:`<h3>📁 Este equipo</h3>
+  <div class="file">📂<br>Documentos</div>
+  <div class="file">🖼️<br>Imágenes</div>
+  <div class="file">🎵<br>Música</div>
+  <div class="file">📥<br>Descargas</div>
+  <p style="color:#b9c6dd">Explorador de archivos de SachOS.</p>`
+ },
+ notes: {
+  title:"Bloc de notas",
+  html:`<textarea id="note" placeholder="Escribe tus ideas aquí..."></textarea>
+  <p><button class="action" onclick="saveNote()">Guardar notas</button>
+  <span id="saved"></span></p>`
+ },
+ terminal: {
+  title:"SachOS Terminal",
+  html:`<div class="terminal" id="term">
+  <div>SachOS Terminal [Versión 0.1]</div>
+  <div>Escribe help para ver los comandos.</div>
+  <div id="output"></div>
+  <input id="cmd" placeholder="sach@os:~$" onkeydown="if(event.key==='Enter')runCommand()">
+  </div>`
+ },
+ settings: {
+  title:"Configuración",
+  html:`<h3>⚙️ Personalización</h3>
+  <p>Color del escritorio</p>
+  <select id="theme" onchange="changeTheme(this.value)">
+   <option value="default">Azul SachOS</option>
+   <option value="purple">Morado</option>
+   <option value="dark">Oscuro</option>
+   <option value="green">Verde</option>
+  </select>
+  <p>Nombre del sistema: SachOS</p>
+  <p>Versión: 0.1</p>
+  <p>Plataforma: Web</p>`
+ },
+ about: {
+  title:"Acerca de SachOS",
+  html:`<h1>💠 SachOS</h1>
+  <h3>Versión 0.1</h3>
+  <p>Sistema operativo experimental basado en tecnologías web.</p>
+  <p>Creado por su desarrollador.</p>
+  <p>HTML · CSS · JavaScript</p>`
+ },
+ browser: {
+  title:"SachBrowser",
+  html:`<h3>🌐 SachBrowser</h3>
+  <p>Bienvenido a SachBrowser.</p>
+  <input id="weburl" placeholder="https://example.com" style="width:100%">
+  <p><button class="action" onclick="browse()">Abrir página</button></p>
+  <p id="browsermsg">Introduce una dirección web.</p>`
+ }
+};
+
+function openApp(id) {
+ document.getElementById('start').style.display='none';
+
+ if(windows[id]) {
+   windows[id].style.display='block';
+   windows[id].style.zIndex=++zIndex;
+   return;
+ }
+
+ const app=apps[id];
+ if(!app)return;
+
+ const win=document.createElement('div');
+ win.className='window';
+ win.style.zIndex=++zIndex;
+ win.innerHTML=`
+ <div class="titlebar">
+   <span>${app.title}</span>
+   <div>
+    <button onclick="minimizeApp('${id}')">—</button>
+    <button onclick="closeApp('${id}')">✕</button>
+   </div>
+ </div>
+ <div class="window-content">${app.html}</div>`;
+
+ document.getElementById('desktop').appendChild(win);
+ windows[id]=win;
+ makeDraggable(win);
+
+ if(id==='notes') {
+   win.querySelector('#note').value=localStorage.getItem('sachos-note')||'';
+ }
+ if(id==='settings') {
+   win.querySelector('#theme').value=localStorage.getItem('sachos-theme')||'default';
+ }
+}
+
+function closeApp(id) {
+ windows[id]?.remove();
+ delete windows[id];
+}
+function minimizeApp(id) {
+ if(windows[id])windows[id].style.display='none';
+}
+function toggleStart() {
+ const s=document.getElementById('start');
+ s.style.display=s.style.display==='block'?'none':'block';
+}
+function saveNote() {
+ const note=document.getElementById('note').value;
+ localStorage.setItem('sachos-note',note);
+ document.getElementById('saved').textContent=' ✓ Guardado';
+}
+function changeTheme(theme) {
+ const themes={
+  default:['#10172d','#243e69'],
+  purple:['#25103d','#67419c'],
+  dark:['#080a10','#20242c'],
+  green:['#092d25','#237d61']
+ };
+ const t=themes[theme]||themes.default;
+ document.getElementById('wallpaper').style.background=
+ `radial-gradient(ellipse at 70% 45%,${t[1]},transparent 50%),linear-gradient(135deg,${t[0]},${t[1]})`;
+ localStorage.setItem('sachos-theme',theme);
+}
+function runCommand() {
+ const input=document.getElementById('cmd');
+ const output=document.getElementById('output');
+ const command=input.value.trim().toLowerCase();
+ let result='';
+ const commands={
+  help:'Comandos: help, about, version, date, clear, hello',
+  about:'SachOS: Sistema operativo web.',
+  version:'SachOS versión 0.1',
+  hello:'¡Hola! Bienvenido a SachOS.',
+  date:new Date().toLocaleString('es-CL'),
+  clear:'__CLEAR__'
+ };
+ result=commands[command]??'Comando desconocido. Escribe help.';
+ if(result==='__CLEAR__')output.innerHTML='';
+ else output.innerHTML+=`<p>$ ${input.value}<br>${result}</p>`;
+ input.value='';
+}
+function browse() {
+ const url=document.getElementById('weburl').value.trim();
+ if(!/^https?:\/\//i.test(url)) {
+  document.getElementById('browsermsg').textContent='Introduce una URL válida con https://';
+  return;
+ }
+ window.open(url,'_blank','noopener,noreferrer');
+}
+function makeDraggable(win) {
+ const bar=win.querySelector('.titlebar');
+ let startX=0,startY=0,origX=0,origY=0,drag=false;
+
+ bar.addEventListener('pointerdown',e=>{
+  if(e.target.tagName==='BUTTON')return;
+  drag=true;
+  win.style.zIndex=++zIndex;
+  startX=e.clientX;startY=e.clientY;
+  const rect=win.getBoundingClientRect();
+  origX=rect.left;origY=rect.top;
+  bar.setPointerCapture(e.pointerId);
+ });
+ bar.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  const x=Math.max(0,Math.min(innerWidth-win.offsetWidth,origX+e.clientX-startX));
+  const y=Math.max(0,Math.min(innerHeight-100,origY+e.clientY-startY));
+  win.style.left=x+'px';
+  win.style.top=y+'px';
+  win.style.transform='none';
+ });
+ bar.addEventListener('pointerup',()=>drag=false);
+ bar.addEventListener('pointercancel',()=>drag=false);
+}
+
+function updateClock() {
+ document.getElementById('clock').innerHTML=
+ new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})+
+ '<br>'+new Date().toLocaleDateString('es-CL');
+}
+updateClock();
+setInterval(updateClock,1000);
+
+const savedTheme=localStorage.getItem('sachos-theme');
+if(savedTheme)changeTheme(savedTheme);
+</script>
+</body>
+</html>
